@@ -1,10 +1,10 @@
-\data\1\1.jpeg 1
-\data\2\2.jpeg 2
-\data\3\3.jpeg 3
-\data\4\4.jpeg 4
-\data\5\5.jpeg 5
-\data\6\6.jpeg 6
-\data\7\7.jpeg 7
-\data\8\8.jpeg 8
-\data\9\9.jpeg 9
-\data\10\10.jpeg 10
+\data\1\1.jpeg 1 Windows8_C_Sharp
+\data\2\2.jpeg 2 Web_Visual_Basic
+\data\3\3.jpeg 3 Itseez_Summer_School
+\data\4\4.jpeg 4 BD_Visual_Basic
+\data\5\5.jpeg 5 Lake_Bailkal
+\data\6\6.jpeg 6 Web_Technologies
+\data\7\7.jpeg 7 MPI
+\data\8\8.jpeg 8 MS_Office
+\data\9\9.jpeg 9 High_Performance_UNN
+\data\10\10.jpeg 10 Aerospace_Technology
