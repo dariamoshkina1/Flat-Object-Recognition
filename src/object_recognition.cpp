@@ -18,25 +18,42 @@ const char* params =
      "{   | image         |       | image to detect objects on                    }"
      "{   | camera        | false | whether to detect on video stream from camera }";
 
+float calculateTriangleArea(Point2f p1, Point2f p2, Point2f p3) {
+	float a = sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
+	float b = sqrt((p3.x-p2.x)*(p3.x-p2.x) + (p3.y-p2.y)*(p3.y-p2.y));
+	float c = sqrt((p1.x-p3.x)*(p1.x-p3.x) + (p1.y-p3.y)*(p1.y-p3.y));
+	float p = (a+b+c)/2;
+	float area = sqrt (p*(p-a)*(p-b)*(p-c));
+	return area;
+}
+
+float fourPointsArea(Point2f p1, Point2f p2, Point2f p3, Point2f p4) {
+	float tr1 = calculateTriangleArea(p1,p2,p3);
+	float tr2 = calculateTriangleArea(p1,p3,p4);
+	return tr1+tr2;
+}
+
 void DrawContours(const Mat image, Mat& test_image, const Mat homography ) {
 	std::vector<Point2f> startcorners, newcorners;
 	std::vector<float> distances;
-	Point2f leftup( 0, 0);
-	Point2f rightup( image.cols, 0);
-	Point2f leftdown( 0, image.rows);
-	Point2f rightdown( image.cols, image.rows);
-	startcorners.push_back(leftup);
-	startcorners.push_back(rightup);
-	startcorners.push_back(rightdown);
-	startcorners.push_back(leftdown);
+	startcorners.push_back(Point2f(0,0));
+	startcorners.push_back(Point2f(image.cols,0));
+	startcorners.push_back(Point2f( image.cols, image.rows));
+	startcorners.push_back(Point2f( 0, image.rows));
 	perspectiveTransform(startcorners, newcorners, homography);
-	for (int i=0; i<3; i++ ) {
+
+	/*for (int i=0; i<3; i++ ) {
 		distances.push_back(pow(newcorners[0].x-newcorners[1].x, 2)+pow(newcorners[0].y-newcorners[1].y, 2));
 		distances.push_back(pow(newcorners[1].x-newcorners[2].x, 2)+pow(newcorners[1].y-newcorners[2].y, 2));
 		distances.push_back(pow(newcorners[2].x-newcorners[3].x, 2)+pow(newcorners[2].y-newcorners[3].y, 2));
 		distances.push_back(pow(newcorners[3].x-newcorners[0].x, 2)+pow(newcorners[3].y-newcorners[0].y, 2));
 	}
-	if ( distances[0]>100 && distances[1]>100 && distances[2]>100 && distances[3]>100) {
+	if ( distances[0]>10000 && distances[1]>10000 && distances[2]>10000 && distances[3]>10000) {*/
+
+	float areaOrig = fourPointsArea(startcorners[0], startcorners[1], startcorners[2], startcorners[3]);
+	float areaFound = fourPointsArea(newcorners[0], newcorners[1], newcorners[2], newcorners[3]);
+	if (areaFound/areaOrig>0.2) {
+
 	line(test_image, Point2f(newcorners[0].x, newcorners[0].y), Point2f(newcorners[1].x, newcorners[1].y), Scalar(0,255,0), 4);
 	line(test_image, Point2f(newcorners[1].x, newcorners[1].y), Point2f(newcorners[2].x, newcorners[2].y), Scalar(0,255,0), 4);
 	line(test_image, Point2f(newcorners[2].x, newcorners[2].y), Point2f(newcorners[3].x, newcorners[3].y), Scalar(0,255,0), 4);
@@ -50,7 +67,7 @@ Mat Descriptor(const Mat image, Mat test_image)
 	const int ransacThreshold = 3;
 	//imshow("image_origin",image);
 	
-
+	//GoodFeaturesToTrackDetector detector;
 	SurfFeatureDetector detector;
 	vector<KeyPoint> keypoints_object, keypoint_test;
 	detector.detect( image, keypoints_object );
@@ -124,7 +141,7 @@ int main(int argc, const char **argv)
 
     std::ifstream sampleListFileReader(sampleListFile);
     char buff[50];
-	test_image = imread(testImage,0);
+	test_image = imread(testImage);
     while (sampleListFileReader.getline(buff, 50))
     {
         string str(buff);
@@ -135,7 +152,7 @@ int main(int argc, const char **argv)
 
 	//	std::cout<<str<<std::endl;
 
-		image = imread(_path + image_file,0);
+		image = imread(_path + image_file);
 
 
 		//std::cout<<_path + image_file<<std::endl;
