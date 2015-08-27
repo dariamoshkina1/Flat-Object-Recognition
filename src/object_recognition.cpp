@@ -8,6 +8,7 @@
 #include <iostream>
 #include "ctime"
 #include "featureExtractor.hpp"
+#include "math.h"
 
 using namespace cv;
 
@@ -36,6 +37,21 @@ void subscribeObject(Mat& image, string name, Point2f leftCornerCoord)
     putText(image, name, textCoord, FONT_HERSHEY_COMPLEX, 1.0, Red, 2);
 }
 
+bool onSameSide(Point2f p1, Point2f p2, Point2f p3, Point2f p4) {
+	float k =0;
+	if (p1.x!=p2.x) k = (p1.y-p2.y)/(p1.x-p2.x); else k = (p1.y-p2.y)/(p1.x-p2.x+0.0001);
+	float b = p1.y - k*p1.x;
+	if (((p3.y-k*p3.x-b)>0 && (p4.y-k*p4.x-b)>0) || ((p3.y-k*p3.x-b)<0 && (p4.y-k*p4.x-b)<0)) return true; else return false;
+}
+
+bool isConvex(Point2f p0, Point2f p1, Point2f p2, Point2f p3) {	
+	if ( onSameSide(p0, p1, p2, p3) && 
+		onSameSide(p1, p2, p3, p0) && 
+		onSameSide(p2, p3, p0, p1) && 
+		onSameSide(p3, p0, p1, p2)
+		) return true; else return false;
+	
+}
 
 float calculateTriangleArea(Point2f p1, Point2f p2, Point2f p3) {
 	float a = sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
@@ -65,7 +81,8 @@ void DrawContours(const Mat image, Mat& test_image, const Mat homography, Scalar
 
 	float areaOrig = fourPointsArea(startcorners[0], startcorners[1], startcorners[2], startcorners[3]);
 	float areaFound = fourPointsArea(newcorners[0], newcorners[1], newcorners[2], newcorners[3]);
-	if (areaFound/areaOrig>0.2) {
+	if (areaFound/areaOrig>0.05 && isConvex(newcorners[0], newcorners[1], newcorners[2], newcorners[3])) {
+	//if (areaFound/areaOrig>0.2 ) {
 	    line(test_image, Point2f(newcorners[0].x, newcorners[0].y), Point2f(newcorners[1].x, newcorners[1].y), color, 4);
 	    line(test_image, Point2f(newcorners[1].x, newcorners[1].y), Point2f(newcorners[2].x, newcorners[2].y), color, 4);
 	    line(test_image, Point2f(newcorners[2].x, newcorners[2].y), Point2f(newcorners[3].x, newcorners[3].y), color, 4);
@@ -87,7 +104,7 @@ void compute(Mat &image, featureExtractor &extractor)
 
 vector<DMatch> matches(featureExtractor& object, featureExtractor& test)
 {
-	BFMatcher matcher( NORM_L1 );
+	BFMatcher matcher( NORM_L2 );
 	vector< DMatch > match;
 	matcher.match( object.GetDescriptor() , test.GetDescriptor() ,match );
 	
@@ -170,6 +187,7 @@ int main(int argc, const char **argv)
 	TE();
 
 	imshow("image",test_image);
+
 	waitKey();
     return 0;
 }
