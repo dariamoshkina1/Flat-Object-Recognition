@@ -67,7 +67,7 @@ Mat Descriptor(const Mat image, Mat test_image)
 	extractor.compute(image,  keypoints_object ,destriptor_object);
 	extractor.compute(test_image, keypoint_test ,destriptor_test);
 
-	BFMatcher matcher( NORM_L2 );
+	BFMatcher matcher( NORM_L1 );
 	vector< DMatch > matches;
 	matcher.match( destriptor_object, destriptor_test,matches );
 
@@ -125,13 +125,13 @@ int main(int argc, const char **argv)
 
     std::ifstream sampleListFileReader(sampleListFile);
     char buff[50];
-	test_image = imread(testImage);
+	test_image = imread(testImage,0);
     while (sampleListFileReader.getline(buff, 50))
     {
         string str(buff);
         string image_file = str.substr(0,str.find(" "));
 
-		image = imread(_path + image_file);
+		image = imread(_path + image_file,0);
 
 		test_image = Descriptor(image,test_image);
     }
