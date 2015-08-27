@@ -12,7 +12,6 @@
 using namespace cv;
 
 
-
 #if 1
   #define TS(name) int64 t_##name = getTickCount()
   #define TE(name) printf("TIMER_" #name ": %.2fms\n", \
@@ -28,6 +27,14 @@ const char* params =
      "{   | samples       |       | path to samples                               }"
      "{   | image         |       | image to detect objects on                    }"
      "{   | camera        | false | whether to detect on video stream from camera }";
+
+
+void subscribeObject(Mat& image, string name, Point2f leftCornerCoord)
+{    
+    Point2f textCoord(leftCornerCoord.x, leftCornerCoord.y + 25);
+    Scalar Red(0, 0, 255);
+    putText(image, name, textCoord, FONT_HERSHEY_COMPLEX, 1.0, Red, 2);
+}
 
 
 float calculateTriangleArea(Point2f p1, Point2f p2, Point2f p3) {
@@ -46,7 +53,7 @@ float fourPointsArea(Point2f p1, Point2f p2, Point2f p3, Point2f p4) {
 	return tr1+tr2;
 }
 
-void DrawContours(const Mat image, Mat& test_image, const Mat homography, Scalar color ) {
+void DrawContours(const Mat image, Mat& test_image, const Mat homography, Scalar color, string objectName ) {
 	std::vector<Point2f> startcorners, newcorners;
 	std::vector<float> distances;
 	startcorners.push_back(Point2f(0,0));
@@ -63,8 +70,12 @@ void DrawContours(const Mat image, Mat& test_image, const Mat homography, Scalar
 	    line(test_image, Point2f(newcorners[1].x, newcorners[1].y), Point2f(newcorners[2].x, newcorners[2].y), color, 4);
 	    line(test_image, Point2f(newcorners[2].x, newcorners[2].y), Point2f(newcorners[3].x, newcorners[3].y), color, 4);
 	    line(test_image, Point2f(newcorners[3].x, newcorners[3].y), Point2f(newcorners[0].x, newcorners[0].y), color, 4);
+		
+		subscribeObject(test_image, objectName, newcorners[0]);
 
 	}
+
+    
 	
 }
 
@@ -150,10 +161,10 @@ int main(int argc, const char **argv)
         string image_file = str.substr(0,str.find(" "));
 		image = imread(_path + image_file);
 		compute(image,tmp);
-		matcher = matches(tmp, test);
+		//matcher = matches(tmp, test);
 		scene = Homography(	matches(tmp, test), tmp, test, 3.0, H);
-		inliers(matcher,scene,test,3.0,inlier);
-		DrawContours(image, test_image, H, Scalar(0,255,0));	
+		//inliers(matcher,scene,test,3.0,inlier);
+		DrawContours(image, test_image, H, Scalar(0,255,0), "ololo");	
     }
 
 	TE();
